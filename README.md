@@ -1,9 +1,8 @@
 # ny_collisionDeformer
 Collision Deformer for Maya
 
-Written in Python API.
 Supports multi-collider.
-Not finished.
+ WIP.
 
 Copy the ny_multiCollision.py to your "maya/plug-ins" folder and make sure it's loaded on Plug-in Manager.
 
