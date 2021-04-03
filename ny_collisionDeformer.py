@@ -5,7 +5,7 @@ from maya.mel import eval as meval
 
 #AUTHOR = Nazmi Yazici
 #EMAIL = nazmiprinter@gmail.com
-#WEBSITE = vimeo.com/nazmiprinter
+#WEBSITE = nazmiprinter.com
 #DATE = 23/10/2020
 
 #TODO: Add elasticity
