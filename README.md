@@ -7,11 +7,9 @@ https://vimeo.com/506137334
 
 **FEATURES**: Multi-collider. Bulging effect. Post-deformation smoothing. Weight paintable.
 
-**INSTALL**:
-Copy the ny_collisionDeformer.py to your "maya/plug-ins" folder and make sure it's loaded on Plug-in Manager.
+**INSTALL**: Copy the ny_collisionDeformer.py to your "maya/plug-ins" folder and make sure it's loaded on Plug-in Manager.
 
-**HOW TO USE**:
-For the initial setup, first select the collider object, then select the object that is going to deform and run the MEL command:
+**HOW TO USE**: For the initial setup, first select the collider object, then select the object that is going to deform and run the MEL command:
 `nyCollision_create()`
 
 To add and remove collider from the deformer, use same selection order and use the MEL commands below respectively:
@@ -19,6 +17,3 @@ To add and remove collider from the deformer, use same selection order and use t
 `nyCollision_add()`
 
 `nyCollision_remove()`
-
-
-
