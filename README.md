@@ -12,7 +12,7 @@ https://vimeo.com/506137334
 **HOW TO USE**: For the initial setup, first select the collider object, then select the object that is going to deform and run the MEL command:
 `nyCollision_create()`
 
-To add and remove collider from the deformer, use same selection order and use the MEL commands below respectively:
+To add and remove collider from the deformer, use same selection order and execute the MEL commands below respectively:
 
 `nyCollision_add()`
 
