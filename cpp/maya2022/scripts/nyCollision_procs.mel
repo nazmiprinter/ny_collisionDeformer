@@ -1,0 +1,98 @@
+//custom attribute editor
+global proc AEnyCollisionDeformerTemplate( string $NODE_NAME )
+{
+    editorTemplate -beginScrollLayout;
+
+        editorTemplate -beginLayout "Deformer Settings" -collapse 0;
+        editorTemplate -addControl "envelope";
+        editorTemplate -addSeparator;
+        editorTemplate -addSeparator;
+        editorTemplate -addSeparator;
+        editorTemplate -addControl "smoothIterations";
+        editorTemplate -endLayout;
+
+        editorTemplate -beginLayout "Bulge Settings" -collapse 0;
+        editorTemplate -addControl "bulgeDistance";
+        editorTemplate -addControl "bulgeStrength";    
+        AEaddRampControl( $NODE_NAME + ".bulgeRamp" );
+        AEdependNodeTemplate $NODE_NAME;
+        editorTemplate -endLayout;
+    
+    editorTemplate -addExtraControls;
+    editorTemplate -endScrollLayout;
+}
+
+//initial deformer setup
+global proc nyCollision_create()
+{
+	string $selList[] = `ls -sl -ap -long`;
+	if (size($selList)==2)
+	{
+		string $collider = $selList[0];
+		string $deforming = $selList[1];
+        
+		string $colliderShape[] = `listRelatives -s $collider`;
+		string $deformer[] = `deformer -typ "nyCollisionDeformer" $deforming`;
+        
+		connectAttr -f ($colliderShape[0] + ".worldMesh[0]") ($deformer[0] + ".colliderList[0]");
+		connectAttr -f ($collider + ".boundingBoxMin") ($deformer[0] + ".boundingBoxList[0].boundingBoxMin");
+        connectAttr -f ($collider + ".boundingBoxMax") ($deformer[0] + ".boundingBoxList[0].boundingBoxMax");
+	}
+	else
+	{
+		error "Please select collider, then deforming object only to create the deformer.";
+	}
+}
+
+//adding collider to the deformer
+global proc nyCollision_add()
+{
+	string $selList[] = `ls -sl -ap -long`;
+	if (size($selList)==2)
+	{
+		string $collider = $selList[0];
+		string $deforming = $selList[1];
+        
+		string $colliderShape[] = `listRelatives -s -children $collider`;
+		string $deformingShape[] = `listRelatives -s -children $deforming`;
+        
+        string $deformerNode[] = `listConnections -d false -s true ($deformingShape[0] + ".inMesh")`;
+        int $multiIndex[] = `getAttr -mi ($deformerNode[0] + ".colliderList")`;
+        int $multiSize = `size $multiIndex`;
+        int $lastItem = $multiIndex[$multiSize -1];
+        int $finalIndex = $lastItem + 1;
+        
+		connectAttr ($colliderShape[0] + ".worldMesh[0]") ($deformerNode[0] + ".colliderList[" + $finalIndex + "]");
+		connectAttr ($collider + ".boundingBoxMin") ($deformerNode[0] + ".boundingBoxList[" + $finalIndex + "].boundingBoxMin");
+        connectAttr ($collider + ".boundingBoxMax") ($deformerNode[0] + ".boundingBoxList[" + $finalIndex + "].boundingBoxMax");
+	}
+	else
+	{
+		error "Please select collider, then deforming object only to add another collider.";
+	}
+}
+
+//removing collider from the deformer
+global proc nyCollision_remove()
+{
+	string $selList[] = `ls -sl -ap -long`;
+	if (size($selList)==2)
+	{
+		string $collider = $selList[0];
+		string $deforming = $selList[1];
+        
+		string $colliderShape[] = `listRelatives -s -children $collider`;
+
+        string $colliderMinConn[] = `listConnections -p true -d true -s false ($collider + ".boundingBoxMin")`;
+        string $colliderMaxConn[] = `listConnections -p true -d true -s false ($collider + ".boundingBoxMax")`;
+        string $colliderShapeConn[] = `listConnections -p true -d true -s false ($colliderShape[0] + ".worldMesh[0]")`;
+        
+		disconnectAttr ($colliderShape[0] + ".worldMesh[0]") ($colliderShapeConn);
+		disconnectAttr ($collider + ".boundingBoxMin") ($colliderMinConn);
+        disconnectAttr ($collider + ".boundingBoxMax") ($colliderMaxConn);
+	}
+	else
+	{
+		error "Please select collider, then deforming object only to remove collider.";
+	}
+}
