@@ -31,6 +31,8 @@ MStatus initializePlugin(MObject pluginObj)
 MStatus uninitializePlugin(MObject pluginObj)
 {
 	MFnPlugin pluginFn(pluginObj);
+	MString removePaintCmd = "makePaintable nyCollisionDeformer weights -remove;";
+	MGlobal::executeCommand(removePaintCmd, true);
 	pluginFn.deregisterNode(CollisionDeformerNode::GetTypeId());
 
 	return(MS::kSuccess);

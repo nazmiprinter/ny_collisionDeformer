@@ -14,7 +14,7 @@
 #include <maya/MItMeshVertex.h>
 #include <algorithm>
 #include <iterator>
-
+#include <vector>
 
 static const MTypeId TYPE_ID = MTypeId(0x0007f7c6);
 static const MString TYPE_NAME = "nyCollisionDeformer";
@@ -197,6 +197,8 @@ MStatus CollisionDeformerNode::deform(MDataBlock& dataBlock,
 	MVector delta;
 	MPoint endPoint;
 	MIntArray colliderIndices;
+	std::vector<int> directVec;
+	std::vector<int> smoothVec;
 
 	//allIntersections flags
 	MMeshIsectAccelParams accelParams;
@@ -222,26 +224,22 @@ MStatus CollisionDeformerNode::deform(MDataBlock& dataBlock,
 	//finding collider plugs
 	MFnDependencyNode thisNode(thisMObject());
 	MPlug colliderListPlug = thisNode.findPlug(colliderList, true);
-	unsigned int elementCount = colliderListHandle.elementCount();
+	unsigned int listElementCount = colliderListHandle.elementCount();
+	unsigned int boxElementCount = boundingBoxCompHandle.elementCount();
 
-	//return if nothing is connected
-	if (colliderListHandle.elementCount() < 1)
-	{
-		return(MS::kSuccess);
-	}
-
-	if (boundingBoxCompHandle.elementCount() < 1)
-	{
-		return(MS::kSuccess);
-	}
-	
 	//finding plugs with connection
-	for (unsigned int i = 0; i < elementCount; i++)
+	for (unsigned int i = 0; i < listElementCount; i++)
 	{
 		colliderListHandle.jumpToElement(i);
 		unsigned int elementIndex = colliderListHandle.elementIndex();
 		if (colliderListPlug.elementByLogicalIndex(elementIndex).isConnected())
 			colliderIndices.append((int)elementIndex);
+	}
+
+	//return if nothing is connected
+	if (colliderIndices.length() == 0)
+	{
+		return(MS::kSuccess);
 	}
 
 	//deformation loop with colliders
@@ -317,6 +315,11 @@ MStatus CollisionDeformerNode::deform(MDataBlock& dataBlock,
 		geoIter.setAllPositions(endPointList);
 
 		geoIter.reset();
+		
+		for(int i: collidingList)
+		{
+			directVec.push_back(i);
+		}
 
 		//indirect deformation
 		if (maxDistance != 0)
@@ -326,7 +329,7 @@ MStatus CollisionDeformerNode::deform(MDataBlock& dataBlock,
 					{
 						localPoint = geoIter.position();
 						curVtx = geoIter.index();
-						bool exists = std::find(std::begin(collidingList), std::end(collidingList), curVtx) != std::end(collidingList);
+						bool exists = std::find(directVec.begin(), directVec.end(), curVtx) != directVec.end();
 						if (!exists)
 						{
 							weightVal = weightValue(dataBlock, geoIndex, curVtx);
@@ -365,6 +368,11 @@ MStatus CollisionDeformerNode::deform(MDataBlock& dataBlock,
 
 	}
 	
+	for (int i : collidingList)
+	{
+		smoothVec.push_back(i);
+	}
+	
 	//post-deformation smoothing
 	if (!smoothValue == 0)
 	{
@@ -381,7 +389,7 @@ MStatus CollisionDeformerNode::deform(MDataBlock& dataBlock,
 			{
 				localPoint = geoIter.position();
 				curVtx = geoIter.index();
-				bool exists = std::find(std::begin(collidingList), std::end(collidingList), curVtx) != std::end(collidingList);
+				bool exists = std::find(smoothVec.begin(), smoothVec.end(), curVtx) != smoothVec.end();
 				if (!exists)
 				{
 					endPointList.set(localPoint, curVtx);
@@ -417,4 +425,5 @@ MStatus CollisionDeformerNode::deform(MDataBlock& dataBlock,
 	}
 
 	return(MS::kSuccess);
+
 }
